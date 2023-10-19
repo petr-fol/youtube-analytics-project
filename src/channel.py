@@ -3,8 +3,6 @@ import os
 
 from googleapiclient.discovery import build
 
-from helper.youtube_api_manual import youtube
-
 
 class Channel:
     """Класс для ютуб-канала"""
@@ -12,23 +10,21 @@ class Channel:
     def __init__(self, channel_id: str) -> None:
         """Экземпляр инициализируется id канала. Дальше все данные будут подтягиваться по API."""
         self._channel_id = channel_id
-        channel = youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()
-        self.title = channel["items"][0]["snippet"]["title"]
-        self.description = channel["items"][0]["snippet"]["description"]
+        self.channel = self.get_service().channels().list(id=self._channel_id, part='snippet,statistics').execute()
+        self.title = self.channel["items"][0]["snippet"]["title"]
+        self.description = self.channel["items"][0]["snippet"]["description"]
         self.url = "https://www.youtube.com/channel/" + self._channel_id
-        self.subscriberCount = channel["items"][0]["statistics"]["subscriberCount"]
-        self.video_count = channel["items"][0]["statistics"]["videoCount"]
-        self.viewCount = channel["items"][0]["statistics"]["viewCount"]
+        self.subscriberCount = self.channel["items"][0]["statistics"]["subscriberCount"]
+        self.video_count = self.channel["items"][0]["statistics"]["videoCount"]
+        self.viewCount = self.channel["items"][0]["statistics"]["viewCount"]
 
     def print_info(self) -> None:
         """Выводит в консоль информацию о канале."""
-        channel = youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()
-        print(json.dumps(channel, indent=2, ensure_ascii=False))
+        print(json.dumps(self.channel, indent=2, ensure_ascii=False))
 
     def return_info(self) -> dict:
         """Возвращает информацию о канале."""
-        channel = youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()
-        return channel
+        return self.channel
 
     @classmethod
     def get_service(cls):
@@ -39,7 +35,7 @@ class Channel:
         return channel
 
     def to_json(self, json_file):
-        """Функция кладет данные экземпляра в указанный json файл."""
+        """Функция перезаписывает данные экземпляра в указанный json файл."""
         channel_dict = dict(id=self._channel_id,
                             title=self.title,
                             description=self.description,
