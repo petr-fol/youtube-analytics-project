@@ -15,7 +15,7 @@ class Channel:
         channel = youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()
         self.title = channel["items"][0]["snippet"]["title"]
         self.description = channel["items"][0]["snippet"]["description"]
-        self.url = channel["items"][0]["snippet"]["thumbnails"]["default"]["url"]
+        self.url = "https://www.youtube.com/channel/" + self._channel_id
         self.subscriberCount = channel["items"][0]["statistics"]["subscriberCount"]
         self.video_count = channel["items"][0]["statistics"]["videoCount"]
         self.viewCount = channel["items"][0]["statistics"]["viewCount"]
@@ -32,12 +32,14 @@ class Channel:
 
     @classmethod
     def get_service(cls):
+        """Возвращает объект для работы с API, то есть набор ключей и значений."""
         api_key = os.environ.get("youtube_API")
         channel = build('youtube', 'v3', developerKey=api_key)
 
         return channel
 
     def to_json(self, json_file):
+        """Функция кладет данные экземпляра в указанный json файл."""
         channel_dict = dict(id=self._channel_id,
                             title=self.title,
                             description=self.description,
@@ -49,3 +51,32 @@ class Channel:
         channel_dict_json = json.dumps(channel_dict)
         with open(json_file, "a") as file:
             file.write(channel_dict_json + "\n")
+
+    # блок с логическими операциями между каналами по количеству подписчиков
+
+    def __str__(self):
+        return self.url  # для распечатывания, возвращает ссылку на канал.
+
+    def __add__(self, other):
+        return int(self.subscriberCount) + int(other.subscriberCount)    # Сложение
+
+    def __sub__(self, other):
+        return int(self.subscriberCount) - int(other.subscriberCount)    # Вычитание
+
+    def __eq__(self, other):
+        return int(self.subscriberCount) == int(other.subscriberCount)   # Сравнение
+
+    def __ne__(self, other):
+        return int(self.subscriberCount) != int(other.subscriberCount)   # Отрицание
+
+    def __lt__(self, other):
+        return int(self.subscriberCount) < int(other.subscriberCount)    # Меньше строгое
+
+    def __gt__(self, other):
+        return int(self.subscriberCount) > int(other.subscriberCount)    # Больше строгое
+
+    def __le__(self, other):
+        return int(self.subscriberCount) <= int(other.subscriberCount)   # Меньше или равно
+
+    def __ge__(self, other):
+        return int(self.subscriberCount) >= int(other.subscriberCount)   # Больше или равно
