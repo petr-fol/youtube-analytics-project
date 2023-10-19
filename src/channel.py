@@ -48,9 +48,9 @@ class Channel:
                             videoCount=self.video_count,
                             viewCount=self.viewCount)
 
-        channel_dict_json = json.dumps(channel_dict)
-        with open(json_file, "a") as file:
-            file.write(channel_dict_json + "\n")
+        with open("moscowpython.json", "w") as file:
+            json.dump(channel_dict, file, indent=4)
+            file.write("\n")
 
     # блок с логическими операциями между каналами по количеству подписчиков
 
