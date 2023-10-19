@@ -1,12 +1,15 @@
 import json
+import os
+
+from googleapiclient.discovery import build
+
 from helper.youtube_api_manual import youtube
 
 
 class Channel:
     """Класс для ютуб-канала"""
 
-    def __init__(self, channel_id: str, title: str = "", description: str = "", url: str = "",
-                 subscriberCount: str = "", video_count: str = "", viewCount: str = "") -> None:
+    def __init__(self, channel_id: str) -> None:
         """Экземпляр инициализируется id канала. Дальше все данные будут подтягиваться по API."""
         self._channel_id = channel_id
         channel = youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()
@@ -21,29 +24,18 @@ class Channel:
         """Выводит в консоль информацию о канале."""
         channel = youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()
         print(json.dumps(channel, indent=2, ensure_ascii=False))
+
+    def return_info(self) -> dict:
+        """Возвращает информацию о канале."""
+        channel = youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()
         return channel
 
     @classmethod
     def get_service(cls):
-        channel_only_id = cls('UC-OVMPlMA3-YCIeg4z5z23A')
-        channel = channel_only_id.print_info()
-        # channel_id = channel["items"][0]["id"]
-        title = channel["items"][0]["snippet"]["title"]
-        description = channel["items"][0]["snippet"]["description"]
-        url = channel["items"][0]["snippet"]["thumbnails"]["default"]["url"]
-        subscriberCount = channel["items"][0]["statistics"]["subscriberCount"]
-        videoCount = channel["items"][0]["statistics"]["videoCount"]
-        viewCount = channel["items"][0]["statistics"]["viewCount"]
+        api_key = os.environ.get("youtube_API")
+        channel = build('youtube', 'v3', developerKey=api_key)
 
-        channel_full = channel_only_id
-        channel_full.title = title
-        channel_full.description = description
-        channel_full.url = url
-        channel_full.subscriberCount = subscriberCount
-        channel_full.video_count = videoCount
-        channel_full.viewCount = viewCount
-
-        return channel_full
+        return channel
 
     def to_json(self, json_file):
         channel_dict = dict(id=self._channel_id,
