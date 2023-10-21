@@ -28,21 +28,8 @@ class Video:
         return self.title
 
 
-class PLVideo:
+class PLVideo(Video):
     def __init__(self, video_id, playlist_id):
+        super().__init__(video_id)
         self.__video_id = video_id
         self.playlist_id = playlist_id
-        self.video = self.get_service().videos().list(part='snippet,statistics', id=self.__video_id).execute()
-        self.title = self.video['items'][0]['snippet']['title']
-        self.url = f"https://www.youtube.com/watch?v={self.__video_id}"
-        self.view_count = self.video['items'][0]['statistics']['viewCount']
-        self.like_count = self.video['items'][0]['statistics']['likeCount']
-
-    @classmethod
-    def get_service(cls):
-        api_key = os.environ.get("youtube_API")
-        youtube = build('youtube', 'v3', developerKey=api_key)
-        return youtube
-
-    def __str__(self):
-        return self.title
