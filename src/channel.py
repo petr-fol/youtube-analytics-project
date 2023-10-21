@@ -30,9 +30,9 @@ class Channel:
     def get_service(cls):
         """Возвращает объект для работы с API, то есть набор ключей и значений."""
         api_key = os.environ.get("youtube_API")
-        channel = build('youtube', 'v3', developerKey=api_key)
+        youtube = build('youtube', 'v3', developerKey=api_key)
 
-        return channel
+        return youtube
 
     def to_json(self, json_file):
         """Функция перезаписывает данные экземпляра в указанный json файл."""
