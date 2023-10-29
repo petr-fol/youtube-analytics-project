@@ -15,12 +15,7 @@ class Video:
         self.__video_id = video_id
         try:
             self.video = self.get_service().videos().list(part='snippet,statistics, contentDetails',
-                                                          id=self.__video_id).execute()
-            self.title = self.video['items'][0]['snippet']['title']
-            self.url = f"https://www.youtube.com/watch?v={self.__video_id}"
-            self.view_count = self.video['items'][0]['statistics']['viewCount']
-            self.like_count = self.video['items'][0]['statistics']['likeCount']
-            self.duration = self.video['items'][0]['contentDetails']['duration']
+                                                          id=self.__video_id).execute()['items'][0]
 
         except IndexError:
             # Если возникает IndexError, обрабатываем исключение
@@ -34,11 +29,11 @@ class Video:
 
         else:
             # Если исключение не возникает, устанавливаем значения атрибутов
-            self.title = self.video['items'][0]['snippet']['title']
+            self.title = self.video['snippet']['title']
             self.url = f"https://www.youtube.com/watch?v={self.__video_id}"
-            self.view_count = self.video['items'][0]['statistics']['viewCount']
-            self.like_count = self.video['items'][0]['statistics']['likeCount']
-            self.duration = self.video['items'][0]['contentDetails']['duration']
+            self.view_count = self.video['statistics']['viewCount']
+            self.like_count = self.video['statistics']['likeCount']
+            self.duration = self.video['contentDetails']['duration']
 
     @classmethod
     def get_service(cls):
