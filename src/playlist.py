@@ -10,17 +10,14 @@ from src.video import Video
 class PlayList:
     def __init__(self, playlist_id):
         self.__playlist_id = playlist_id
-        self.playlist = self.get_service().playlists().list(id=self.__playlist_id, part='snippet').execute()
-        self.title = self.playlist['items'][0]['snippet']['title']
-        self.url = f'https://www.youtube.com/playlist?list={self.playlist["items"][0]["id"]}'
+        self.playlist = self.get_service().playlists().list(id=self.__playlist_id,
+                                                            part='snippet').execute()['items'][0]
+        self.title = self.playlist['snippet']['title']
+        self.url = f'https://www.youtube.com/playlist?list={self.playlist["id"]}'
 
     def print_info(self) -> None:
         """Выводит в консоль информацию о канале."""
         print(json.dumps(self.playlist, indent=2, ensure_ascii=False))
-
-    def return_info(self) -> dict:
-        """Возвращает информацию о канале."""
-        return self.playlist
 
     @classmethod
     def get_service(cls):
@@ -40,40 +37,27 @@ class PlayList:
 
         for video in videos['items']:
             video_id = video['contentDetails']['videoId']
-
             # Инициализируем объект Video для получения информации о видео
             video_obj = Video(video_id)
 
-            # Получаем длительность видео с помощью объекта Video
-            video_duration = video_obj.duration
-
             hours, minutes, seconds = "0", "0", "0"
-            if "H" in video_duration[2:]:
-                flag = "H"
-            elif "M" in video_duration[2:]:
-                flag = "M"
-            else:
-                flag = "S"
+            values = [hours, minutes, seconds]
+            time_ = ["H", "M", "S"]
 
-            for symbol in video_duration[2:]:
+            for key in time_:
+                if key in video_obj.duration[2:]:
+                    flag = key
+                    break
 
-                if flag == "H":
-                    if symbol.isdigit():
-                        hours += symbol
-                    else:
-                        flag = "M"
+            for symbol in video_obj.duration[2:]:
+                for index, key in enumerate(time_):
+                    if flag == key:
+                        if symbol.isdigit():
+                            values[index] += symbol
+                        elif index < 2:
+                            flag = time_[index + 1]
 
-                if flag == "M":
-                    if symbol.isdigit():
-                        minutes += symbol
-                    else:
-                        flag = "S"
-
-                if flag == "S":
-                    if symbol.isdigit():
-                        seconds += symbol
-
-            hours, minutes, seconds = int(hours), int(minutes), int(seconds)
+            hours, minutes, seconds = int(values[0]), int(values[1]), int(values[2])
             video_duration_timedelta = datetime.timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
             total_duration += video_duration_timedelta
@@ -84,15 +68,15 @@ class PlayList:
             playlistId=self.__playlist_id,
             part='id,contentDetails'
         ).execute()
-        popular_video_id = 0
         max_likes = 0
         # show_best_video = None  # Инициализируем переменную здесь
 
         for video in videos["items"]:
-            video_obj = Video(video["contentDetails"]["videoId"])
+            video_id = video['contentDetails']['videoId']
+            video_obj = Video(video_id)
             # Преобразуем video_obj.like_count в целое число перед сравнением
             video_like_count = int(video_obj.like_count)
             if video_like_count > max_likes:
                 max_likes = video_like_count
-                url = f"https://youtu.be/{video['contentDetails']['videoId']}"
+                url = f"https://youtu.be/{video_id}"
         return url
