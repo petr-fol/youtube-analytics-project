@@ -3,17 +3,37 @@ import json
 from googleapiclient.discovery import build
 import os
 
+from googleapiclient.errors import HttpError
+
 
 class Video:
 
     def __init__(self, video_id):
         self.__video_id = video_id
-        self.video = self.get_service().videos().list(part='snippet,statistics, contentDetails', id=self.__video_id).execute()
-        self.title = self.video['items'][0]['snippet']['title']
-        self.url = f"https://www.youtube.com/watch?v={self.__video_id}"
-        self.view_count = self.video['items'][0]['statistics']['viewCount']
-        self.like_count = self.video['items'][0]['statistics']['likeCount']
-        self.duration = self.video['items'][0]['contentDetails']['duration']
+        try:
+            self.video = self.get_service().videos().list(part='snippet,statistics, contentDetails',
+                                                          id=self.__video_id).execute()
+            self.title = self.video['items'][0]['snippet']['title']
+            self.url = f"https://www.youtube.com/watch?v={self.__video_id}"
+            self.view_count = self.video['items'][0]['statistics']['viewCount']
+            self.like_count = self.video['items'][0]['statistics']['likeCount']
+            self.duration = self.video['items'][0]['contentDetails']['duration']
+
+        except IndexError:
+            self.video = None
+            self.title = None
+            self.url = None
+            self.view_count = None
+            self.like_count = None
+            self.duration = None
+            print("Запрос к апи вернул пустые поля")
+
+        else:
+            self.title = self.video['items'][0]['snippet']['title']
+            self.url = f"https://www.youtube.com/watch?v={self.__video_id}"
+            self.view_count = self.video['items'][0]['statistics']['viewCount']
+            self.like_count = self.video['items'][0]['statistics']['likeCount']
+            self.duration = self.video['items'][0]['contentDetails']['duration']
 
     @classmethod
     def get_service(cls):
