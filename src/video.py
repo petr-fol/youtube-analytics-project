@@ -19,12 +19,8 @@ class Video:
 
         except IndexError:
             # Если возникает IndexError, обрабатываем исключение
-            self.video = None
-            self.title = None
-            self.url = None
-            self.view_count = None
-            self.like_count = None
-            self.duration = None
+            self.video, self.title, self.url, self.view_count, self.like_count, self.duration\
+                = None, None, None, None, None, None
             print("Запрос к API вернул пустые поля")
 
         else:
