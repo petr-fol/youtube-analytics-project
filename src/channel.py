@@ -10,21 +10,29 @@ class Channel:
     def __init__(self, channel_id: str) -> None:
         """Экземпляр инициализируется id канала. Дальше все данные будут подтягиваться по API."""
         self._channel_id = channel_id
-        self.channel = self.get_service().channels().list(id=self._channel_id, part='snippet,statistics').execute()
-        self.title = self.channel["items"][0]["snippet"]["title"]
-        self.description = self.channel["items"][0]["snippet"]["description"]
-        self.url = "https://www.youtube.com/channel/" + self._channel_id
-        self.subscriberCount = self.channel["items"][0]["statistics"]["subscriberCount"]
-        self.video_count = self.channel["items"][0]["statistics"]["videoCount"]
-        self.viewCount = self.channel["items"][0]["statistics"]["viewCount"]
+        try:
+            self.channel = self.get_service().channels().list(id=self._channel_id,
+                                                              part='snippet,statistics').execute()["items"][0]
+        except IndexError:  # обработка запроса с неправильным id
+            self.title = None
+            self.description = None
+            self.url = None
+            self.subscriberCount = None
+            self.video_count = None
+            self.viewCount = None
+            print("Запрос к API вернул пустые поля")
+
+        else:    # обработка корректного запроса
+            self.title = self.channel["snippet"]["title"]
+            self.description = self.channel["snippet"]["description"]
+            self.url = "https://www.youtube.com/channel/" + self._channel_id
+            self.subscriberCount = self.channel["statistics"]["subscriberCount"]
+            self.video_count = self.channel["statistics"]["videoCount"]
+            self.viewCount = self.channel["statistics"]["viewCount"]
 
     def print_info(self) -> None:
         """Выводит в консоль информацию о канале."""
         print(json.dumps(self.channel, indent=2, ensure_ascii=False))
-
-    def return_info(self) -> dict:
-        """Возвращает информацию о канале."""
-        return self.channel
 
     @classmethod
     def get_service(cls):
@@ -46,7 +54,6 @@ class Channel:
 
         with open("moscowpython.json", "w") as file:
             json.dump(channel_dict, file, indent=4)
-            file.write("\n")
 
     # блок с логическими операциями между каналами по количеству подписчиков
 
